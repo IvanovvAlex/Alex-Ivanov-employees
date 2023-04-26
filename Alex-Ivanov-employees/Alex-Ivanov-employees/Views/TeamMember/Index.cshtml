@@ -1,6 +1,4 @@
-﻿@page
-@model Alex_Ivanov_employees.Models.TeamMemberIndex
-@using Alex_Ivanov_employees.Models
+﻿@model Alex_Ivanov_employees.Models.TeamMembersIndex
 
 <form method="post" enctype="multipart/form-data">
     <div class="form-group">
@@ -10,36 +8,11 @@
     <button type="submit" class="btn btn-primary">Upload</button>
 </form>
 
-@if (Model.Result == null)
+@if (Model == null)
 {
     <p>No data available</p>
 }
-else if (Model.Result.Count == 0)
-{
-    <p>No results found</p>
-}
 else
 {
-    <h2>Longest Worked Projects:</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Employee 1</th>
-                <th>Employee 2</th>
-                <th>Project ID</th>
-                <th>Duration</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var result in Model.Result)
-            {
-                <tr>
-                    <td>@result.Item1</td>
-                    <td>@result.Item2</td>
-                    <td>@result.Item3</td>
-                    <td>@result.Item4</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <h3>The pair of employees who have worked together on common projects for the longest period of time are: @Model.Emp1 and @Model.Emp2 , for @Model.Duration days."</h3>
 }

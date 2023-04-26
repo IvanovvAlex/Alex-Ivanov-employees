@@ -1,5 +1,6 @@
 ﻿using Alex_Ivanov_employees.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace Alex_Ivanov_employees.Controllers
 {
@@ -28,18 +29,17 @@ namespace Alex_Ivanov_employees.Controllers
                 return View();
             }
 
-            var filePath = Path.Combine(_environment.ContentRootPath, "uploads", file.FileName);
+            var filePath = Path.Combine(_environment.ContentRootPath, "Uploads", file.FileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 file.CopyTo(stream);
             }
-            var projects = LoadMembersFromFile(filePath);
+            var teamMembers = LoadMembersFromFile(filePath);
 
-            var result = FindLongestWorkedProjects(projects);
+            var result = FindLongestWorkedProjects(teamMembers);
 
-            TeamMemberIndex model = new TeamMemberIndex(result);
-            return View(model);
+            return View(result);
         }
 
         private List<TeamMember> LoadMembersFromFile(string filePath)
@@ -58,8 +58,11 @@ namespace Alex_Ivanov_employees.Controllers
                         EmpID = values[0],
                         ProjectID = values[1],
                         DateFrom = DateTime.Parse(values[2]),
-                        DateTo = string.IsNullOrEmpty(values[3]) ? null : (DateTime?)DateTime.Parse(values[3])
                     };
+                    if (!(string.IsNullOrEmpty(values[3]) || values[3].ToLower().Trim() == "null"))
+                    { 
+                        member.DateTo = (DateTime)DateTime.Parse(values[3]);
+                    }
 
                     members.Add(member);
                 }
@@ -68,52 +71,35 @@ namespace Alex_Ivanov_employees.Controllers
             return members;
         }
 
-        private List<Tuple<string, string, string, TimeSpan>> FindLongestWorkedProjects(List<TeamMember> projects)
+        private TeamMembersIndex FindLongestWorkedProjects(List<TeamMember> teamMembers)
         {
-            var pairs = GetEmployeePairs(projects);
-            var longestProjects = new List<Tuple<string, string, string, TimeSpan>>();
-
-            foreach (var pair in pairs)
+            // Identify the pair of employees who have worked together on common projects for the longest period of time
+            int maxDuration = 0;
+            string emp1 = string.Empty;
+            string emp2 = string.Empty;
+            for (int i = 0; i < teamMembers.Count - 1; i++)
             {
-                var commonProjects = projects.Where(p => (p.EmpID == pair.Item1 && p.ProjectID == pair.Item2) || (p.EmpID == pair.Item2 && p.ProjectID == pair.Item1));
-
-                if (commonProjects.Any())
+                for (int j = i + 1; j < teamMembers.Count; j++)
                 {
-                    var longestProject = commonProjects.Aggregate((p1, p2) => (p2.DateTo ?? DateTimeOffset.Now) - p1.DateFrom > (p1.DateTo ?? DateTimeOffset.Now) - p2.DateFrom ? p2 : p1);
-
-                    longestProjects.Add(new Tuple<string, string, string, TimeSpan>(pair.Item1, pair.Item2, longestProject.ProjectID, (longestProject.DateTo ?? DateTimeOffset.Now) - longestProject.DateFrom));
-                }
-            }
-
-            return longestProjects;
-        }
-
-        private List<Tuple<string, string>> GetEmployeePairs(List<TeamMember> projects)
-        {
-            var employeeProjects = projects.GroupBy(p => p.EmpID);
-
-            var pairs = new List<Tuple<string, string>>();
-
-            foreach (var employeeProject in employeeProjects)
-            {
-                var projectsOfEmployee = employeeProject.Select(p => p.ProjectID).ToList();
-
-                foreach (var otherEmployeeProject in employeeProjects.Where(ep => ep.Key != employeeProject.Key))
-                {
-                    var otherProjects = otherEmployeeProject.Select(p => p.ProjectID).ToList();
-
-                    var commonProjects = projectsOfEmployee.Intersect(otherProjects);
-
-                    if (commonProjects.Any())
+                    if (teamMembers[i].ProjectID == teamMembers[j].ProjectID)
                     {
-                        var pair = new Tuple<string, string>(employeeProject.Key, otherEmployeeProject.Key);
-
-                        pairs.Add(pair);
+                        int duration = (int)(teamMembers[i].DateTo - teamMembers[j].DateFrom).TotalDays;
+                        if (duration > maxDuration && teamMembers[i] != teamMembers[j])
+                        {
+                            maxDuration = duration;
+                            emp1 = teamMembers[i].EmpID;
+                            emp2 = teamMembers[j].EmpID;
+                        }
                     }
                 }
             }
 
-            return pairs;
+            return new TeamMembersIndex {              
+                Emp1 = emp1,
+                Emp2 = emp2,
+                Duration = maxDuration
+            };
+
         }
     }
 }
