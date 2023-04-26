@@ -15,7 +15,7 @@ namespace Alex_Ivanov_employees.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return Redirect("TeamMember");
         }
 
         public IActionResult Privacy()
