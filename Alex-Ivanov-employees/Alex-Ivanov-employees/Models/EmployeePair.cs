@@ -4,6 +4,7 @@
     {
         public string FirstEmployeeID { get; set; }
         public string SecondEmployeeID { get; set; }
+        public string TeamID { get; set; }
         public double Duration { get; set; }
     }
 }

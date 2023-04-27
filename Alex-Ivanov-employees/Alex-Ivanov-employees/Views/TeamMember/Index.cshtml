@@ -1,4 +1,4 @@
-﻿@model Alex_Ivanov_employees.Models.EmployeePair
+﻿@model IEnumerable<Alex_Ivanov_employees.Models.EmployeePair>
 
 <form method="post" enctype="multipart/form-data">
     <div class="form-group">
@@ -8,11 +8,28 @@
     <button type="submit" class="btn btn-primary">Upload</button>
 </form>
 
-@if (Model == null)
+@if (Model != null)
 {
-    <p>No data available</p>
-}
-else
-{
-    <h3>The pair of employees who have worked together on common projects for the longest period of time are: @Model.FirstEmployeeID and @Model.SecondEmployeeID , for @Model.Duration days."</h3>
+    <h2>Longest Worked Projects:</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Employee 1</th>
+                <th>Employee 2</th>
+                <th>Project ID</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.FirstEmployeeID</td>
+                    <td>@item.SecondEmployeeID</td>
+                    <td>@item.TeamID</td>
+                    <td>@item.Duration</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
