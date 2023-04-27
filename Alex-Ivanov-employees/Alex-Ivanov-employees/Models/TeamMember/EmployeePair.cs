@@ -1,4 +1,4 @@
-﻿namespace Alex_Ivanov_employees.Models
+﻿namespace Alex_Ivanov_employees.Models.TeamMember
 {
     public class EmployeePair
     {

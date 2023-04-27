@@ -11,8 +11,4 @@
     <Folder Include="Uploads\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="wwwroot\css\TeamMember\index.css" />
-  </ItemGroup>
-
 </Project>

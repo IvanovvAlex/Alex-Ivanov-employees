@@ -1,6 +1,6 @@
-﻿namespace Alex_Ivanov_employees.Models
+﻿namespace Alex_Ivanov_employees.Data
 {
-    public class TeamMember
+    public class TeamMemberSchema
     {
         public string Id { get; set; }
         public string TeamId { get; set; }
