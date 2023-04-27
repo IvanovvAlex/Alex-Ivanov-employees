@@ -1,4 +1,4 @@
-﻿@model Alex_Ivanov_employees.Models.TeamMembersIndex
+﻿@model Alex_Ivanov_employees.Models.EmployeePair
 
 <form method="post" enctype="multipart/form-data">
     <div class="form-group">
@@ -14,5 +14,5 @@
 }
 else
 {
-    <h3>The pair of employees who have worked together on common projects for the longest period of time are: @Model.Emp1 and @Model.Emp2 , for @Model.Duration days."</h3>
+    <h3>The pair of employees who have worked together on common projects for the longest period of time are: @Model.FirstEmployeeID and @Model.SecondEmployeeID , for @Model.Duration days."</h3>
 }

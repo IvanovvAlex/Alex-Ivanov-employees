@@ -37,7 +37,7 @@ namespace Alex_Ivanov_employees.Controllers
             }
             var teamMembers = LoadMembersFromFile(filePath);
 
-            var result = FindLongestWorkedProjects(teamMembers);
+            var result = FindLongestWorkingPair(teamMembers);
 
             return View(result);
         }
@@ -55,13 +55,13 @@ namespace Alex_Ivanov_employees.Controllers
 
                     var member = new TeamMember
                     {
-                        EmpID = values[0],
-                        ProjectID = values[1],
+                        Id = values[0],
+                        TeamId = values[1],
                         DateFrom = DateTime.Parse(values[2]),
                     };
                     if (!(string.IsNullOrEmpty(values[3]) || values[3].ToLower().Trim() == "null"))
-                    { 
-                        member.DateTo = (DateTime)DateTime.Parse(values[3]);
+                    {
+                        member.DateTill = (DateTime)DateTime.Parse(values[3]);
                     }
 
                     members.Add(member);
@@ -70,36 +70,72 @@ namespace Alex_Ivanov_employees.Controllers
 
             return members;
         }
-
-        private TeamMembersIndex FindLongestWorkedProjects(List<TeamMember> teamMembers)
+        public EmployeePair FindLongestWorkingPair(List<TeamMember> teamMembers)
         {
-            // Identify the pair of employees who have worked together on common projects for the longest period of time
-            int maxDuration = 0;
-            string emp1 = string.Empty;
-            string emp2 = string.Empty;
+            EmployeePair longestPair = null;
+            Dictionary<string, double> employeePairs = new Dictionary<string, double>();
+
             for (int i = 0; i < teamMembers.Count - 1; i++)
             {
                 for (int j = i + 1; j < teamMembers.Count; j++)
                 {
-                    if (teamMembers[i].ProjectID == teamMembers[j].ProjectID)
+                    if (teamMembers[i].TeamId == teamMembers[j].TeamId && teamMembers[i].Id != teamMembers[j].Id)
                     {
-                        int duration = (int)(teamMembers[i].DateTo - teamMembers[j].DateFrom).TotalDays;
-                        if (duration > maxDuration && teamMembers[i] != teamMembers[j])
+                        DateTime startDate = teamMembers[i].DateFrom > teamMembers[j].DateFrom ? teamMembers[i].DateFrom : teamMembers[j].DateFrom;
+                        DateTime? endDate = null;
+                        if (teamMembers[i].DateTill != null && teamMembers[j].DateTill != null)
                         {
-                            maxDuration = duration;
-                            emp1 = teamMembers[i].EmpID;
-                            emp2 = teamMembers[j].EmpID;
+                            endDate = teamMembers[i].DateTill < teamMembers[j].DateTill ? teamMembers[i].DateTill : teamMembers[j].DateTill;
+                        }
+                        else if (teamMembers[i].DateTill != null)
+                        {
+                            endDate = teamMembers[i].DateTill;
+                        }
+                        else if (teamMembers[j].DateTill != null)
+                        {
+                            endDate = teamMembers[j].DateTill;
+                        }
+                        if (endDate != null)
+                        {
+                            TimeSpan duration = endDate.Value - startDate;
+                            double days = Math.Abs(duration.TotalDays);
+
+                            string key = $"{teamMembers[i].Id}-{teamMembers[j].Id}";
+                            if (employeePairs.ContainsKey(key))
+                            {
+                                if (days > employeePairs[key])
+                                {
+                                    employeePairs[key] = days;
+                                }
+                            }
+                            else
+                            {
+                                employeePairs.Add(key, days);
+                            }
                         }
                     }
                 }
             }
 
-            return new TeamMembersIndex {              
-                Emp1 = emp1,
-                Emp2 = emp2,
-                Duration = maxDuration
-            };
+            foreach (KeyValuePair<string, double> pair in employeePairs)
+            {
+                string[] ids = pair.Key.Split('-');
+                EmployeePair currentPair = new EmployeePair
+                {
+                    FirstEmployeeID = ids[0],
+                    SecondEmployeeID = ids[1],
+                    Duration = pair.Value
+                };
+                if (longestPair == null || currentPair.Duration > longestPair.Duration)
+                {
+                    longestPair = currentPair;
+                }
+            }
 
+            return longestPair;
         }
+
+
+
     }
 }

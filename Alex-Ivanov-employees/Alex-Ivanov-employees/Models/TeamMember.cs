@@ -2,10 +2,10 @@
 {
     public class TeamMember
     {
-        public string EmpID { get; set; }
-        public string ProjectID { get; set; }
+        public string Id { get; set; }
+        public string TeamId { get; set; }
         public DateTime DateFrom { get; set; }
-        public DateTime DateTo { get; set; }
+        public DateTime? DateTill { get; set; }
 
     }
 }
